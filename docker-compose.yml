@@ -104,3 +104,14 @@ services:
       - front-tier
     command: --admin-password-file /tmp/admin-password-file -H unix:///var/run/docker.sock
     restart: always
+
+  coredns:
+    build: ./config/coredns
+    ports:
+      - 192.168.1.100:53:53
+      - 192.168.1.100:53:53/udp
+      - 9153:9153
+    networks:
+      - back-tier
+      - front-tier
+    restart: always
