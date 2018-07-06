@@ -115,3 +115,19 @@ services:
       - back-tier
       - front-tier
     restart: always
+
+  unifi:
+    image: jacobalberty/unifi:5.8.24
+    ports:
+    - 8080:8080
+    - 8443:8443
+    - 3478:3478/udp
+    - 10001:10001/udp
+    volumes:
+      - ./data/unifi:/unifi
+    environment:
+      - TZ="America/Los_Angeles"
+    networks:
+      - back-tier
+      - front-tier
+    restart: unless-stopped

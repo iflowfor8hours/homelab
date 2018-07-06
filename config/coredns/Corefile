@@ -1,19 +1,25 @@
+skynet {
+    forward . dns://192.168.1.1
+
+    errors
+    log
+}
+
 . {
     hosts block.hosts {
         fallthrough
     }
 
     forward . tls://9.9.9.9 {
-        except skynet
         tls_servername dns.quad9.net
         health_check 5s
     }
 
-    proxy . 192.168.1.1:53
-
     health :8080
     prometheus :9153
+
     cache 300
+
     errors
     log
 }
