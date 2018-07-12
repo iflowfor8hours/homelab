@@ -1,24 +1,16 @@
-FROM golang:alpine as gobuild
+FROM golang as gobuild
 
-RUN apk update; \
-	apk add git; \
-	go get -v github.com/coredns/coredns
+COPY healthcheck.go /healthcheck.go
+RUN CGO_ENABLED=0 go build -o /healthcheck /healthcheck.go
 
-WORKDIR /go/src/github.com/coredns/coredns
-RUN CGO_ENABLED=0 go build -ldflags="-s -w -X github.com/coredns/coredns/coremain.GitCommit=$(git describe --dirty --always)" -o coredns
+FROM coredns/coredns:1.2.0
 
-FROM alpine
-
-RUN apk add --no-cache ca-certificates; \
-    rm -rf /var/cache/apk/*;
-
-COPY --from=gobuild /go/src/github.com/coredns/coredns/coredns /coredns
 COPY Corefile /Corefile
 
 ADD https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts /block.hosts
-EXPOSE 53 53/udp
+
+COPY --from=gobuild /healthcheck /healthcheck
 EXPOSE 9153
+HEALTHCHECK --interval=1s --timeout=1s --start-period=2s --retries=3 CMD [ "/healthcheck" ]
 
-HEALTHCHECK CMD wget -q localhost:8080/health -O /dev/null || exit 1
-
-CMD ["/coredns", "-conf", "/Corefile"]
+ENTRYPOINT ["/coredns", "-conf", "/Corefile"]
