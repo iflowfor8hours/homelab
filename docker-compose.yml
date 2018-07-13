@@ -90,6 +90,10 @@ services:
     environment:
       - ELASTICSEARCH_HOST=minime.skynet
     user: root
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
 
   portainer:
     image: portainer/portainer
